@@ -43,19 +43,15 @@
   (->> (for [r rates
              p prices
            :when (= (:rateCode r) (:rateCode p))]
-          (merge r p))
-     (sort-by (juxt :cabinCode :rateGroup :price))
-     (partition-by (juxt :rateGroup :cabinCode))
-     (map first)
+          (merge r p))                             ;; Join using list comprehension
+     (sort-by (juxt :cabinCode :rateGroup :price)) ;; Sort so cabin codes together and rate groups together and lowest price first
+     (partition-by (juxt :rateGroup :cabinCode))   ;; Group by rate group and cabin code
+     (map first)                                   ;; get the lowest price in each group
   ))
 ;; @@
 ;; =>
 ;;; {"type":"html","content":"<span class='clj-var'>#&#x27;TST-assignment-clj/best-price-for-each-rate-group</span>","value":"#'TST-assignment-clj/best-price-for-each-rate-group"}
 ;; <=
-
-;; **
-;;;  
-;; **
 
 ;; @@
 ;; data
@@ -89,6 +85,7 @@
 ;; <=
 
 ;; @@
+;; tests
 (deftest test-best-price-for-each-rate-group
   (is (= correct-output (best-price-for-each-rate-group rates prices))))
 ;; @@
@@ -147,11 +144,11 @@
 
 ;; @@
 (defn all-combinable-promotions
-  [all-promotions]
+  [promotions]
   )
 
 (defn combinable-promotions
-  [code all-promotions]
+  [code promotions]
   )
 ;; @@
 ;; =>
@@ -162,8 +159,41 @@
 (def promotions [{:code "P1" :not-combinable-with ["P3"]}
                  {:code "P2" :not-combinable-with ["P4" "P5"]}
                  {:code "P3" :not-combinable-with ["P1"]}
-                 {:code "P4" :not-combinable-with ["P2" "P5"]}
-                 {:code "P5" :not-combinable-with ["P2" "P4"]}])
+                 {:code "P4" :not-combinable-with ["P2"]}
+                 {:code "P5" :not-combinable-with ["P2"]}])
 
-(def expected-output-for-all-promotion-combinations [["P1" "P2"]])
+(def expected-output-for-all-promotion-combinations [["P1" "P2"]
+                                                     ["P1" "P4" "P5"]
+                                                     ["P3" "P2"]
+                                                     ["P3" "P4" "P5"]])
+;; @@
+;; =>
+;;; {"type":"html","content":"<span class='clj-var'>#&#x27;TST-assignment-clj/expected-output-for-all-promotion-combinations</span>","value":"#'TST-assignment-clj/expected-output-for-all-promotion-combinations"}
+;; <=
+
+;; @@
+;; experiments
+(let [p-codes (map :code promotions)
+      p-keys (map keyword p-codes)
+      p-map (zipmap p-keys (map :not-combinable-with promotions))] 
+     (remove (set ((first p-keys) p-map)) p-codes))
+
+;; I know this needs to be recursive 
+
+(defn remove-not-combinable-with
+  [p])
+;; @@
+;; =>
+;;; {"type":"list-like","open":"<span class='clj-lazy-seq'>(</span>","close":"<span class='clj-lazy-seq'>)</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-string'>&quot;P1&quot;</span>","value":"\"P1\""},{"type":"html","content":"<span class='clj-string'>&quot;P2&quot;</span>","value":"\"P2\""},{"type":"html","content":"<span class='clj-string'>&quot;P4&quot;</span>","value":"\"P4\""},{"type":"html","content":"<span class='clj-string'>&quot;P5&quot;</span>","value":"\"P5\""}],"value":"(\"P1\" \"P2\" \"P4\" \"P5\")"}
+;; <=
+
+;; @@
+(zipmap (map (comp keyword :code) promotions) (map :not-combinable-with promotions))
+;; @@
+;; =>
+;;; {"type":"list-like","open":"<span class='clj-map'>{</span>","close":"<span class='clj-map'>}</span>","separator":", ","items":[{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:P1</span>","value":":P1"},{"type":"list-like","open":"<span class='clj-vector'>[</span>","close":"<span class='clj-vector'>]</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-string'>&quot;P3&quot;</span>","value":"\"P3\""}],"value":"[\"P3\"]"}],"value":"[:P1 [\"P3\"]]"},{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:P2</span>","value":":P2"},{"type":"list-like","open":"<span class='clj-vector'>[</span>","close":"<span class='clj-vector'>]</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-string'>&quot;P4&quot;</span>","value":"\"P4\""},{"type":"html","content":"<span class='clj-string'>&quot;P5&quot;</span>","value":"\"P5\""}],"value":"[\"P4\" \"P5\"]"}],"value":"[:P2 [\"P4\" \"P5\"]]"},{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:P3</span>","value":":P3"},{"type":"list-like","open":"<span class='clj-vector'>[</span>","close":"<span class='clj-vector'>]</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-string'>&quot;P1&quot;</span>","value":"\"P1\""}],"value":"[\"P1\"]"}],"value":"[:P3 [\"P1\"]]"},{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:P4</span>","value":":P4"},{"type":"list-like","open":"<span class='clj-vector'>[</span>","close":"<span class='clj-vector'>]</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-string'>&quot;P2&quot;</span>","value":"\"P2\""}],"value":"[\"P2\"]"}],"value":"[:P4 [\"P2\"]]"},{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:P5</span>","value":":P5"},{"type":"list-like","open":"<span class='clj-vector'>[</span>","close":"<span class='clj-vector'>]</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-string'>&quot;P2&quot;</span>","value":"\"P2\""}],"value":"[\"P2\"]"}],"value":"[:P5 [\"P2\"]]"}],"value":"{:P1 [\"P3\"], :P2 [\"P4\" \"P5\"], :P3 [\"P1\"], :P4 [\"P2\"], :P5 [\"P2\"]}"}
+;; <=
+
+;; @@
+
 ;; @@
