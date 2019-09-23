@@ -172,19 +172,58 @@
 ;; <=
 
 ;; @@
-;; experiments
-(let [p-codes (map :code promotions)
-      p-keys (map keyword p-codes)
-      p-map (zipmap p-keys (map :not-combinable-with promotions))] 
-     (remove (set ((first p-keys) p-map)) p-codes))
-
-;; I know this needs to be recursive 
-
+;; experiments brute force figure out how to use recursion
 (defn remove-not-combinable-with
-  [p])
+  [promotions]
+  )
+
+(->> [(let [p-codes (map :code promotions)
+            p-keys (map keyword p-codes)
+            p-map (zipmap (map (comp keyword :code) promotions) (map :not-combinable-with promotions))] 
+           (->> p-codes
+                (remove (set ((first p-keys) p-map)))    ;; removes P3
+                (remove (set ((second p-keys) p-map))))) ;; removes P4 and P5
+
+      (let [p-codes (->> (map :code promotions)
+                         ((juxt rest first))
+                         flatten)
+            p-keys (map keyword p-codes)
+            p-map (zipmap (map (comp keyword :code) promotions) (map :not-combinable-with promotions))] 
+           (->> p-codes
+                (remove (set ((first p-keys) p-map)))    ;; removes P4 and P5
+                (remove (set ((second p-keys) p-map)))   ;; removes P1
+                sort)) 
+
+      (let [p-codes (->> (map :code promotions)
+                         ((juxt rest first))
+                         flatten
+                         ((juxt rest first))
+                         flatten)
+            p-keys (map keyword p-codes)
+            p-map (zipmap (map (comp keyword :code) promotions) (map :not-combinable-with promotions))] 
+           (->> p-codes
+                (remove (set ((first p-keys) p-map)))    ;; removes P1
+                (remove (set ((second p-keys) p-map)))   ;; removes P2
+                sort)) 
+
+      (let [p-codes (->> (map :code promotions)
+                         ((juxt rest first))
+                         flatten
+                         ((juxt rest first))
+                         flatten
+                         ((juxt rest first))
+                         flatten)
+            p-keys (map keyword p-codes)
+            p-map (zipmap (map (comp keyword :code) promotions) (map :not-combinable-with promotions))] 
+           (->> p-codes
+                (remove (set ((first p-keys) p-map)))    ;; removes P2
+                (remove (set ((second p-keys) p-map)))   ;; removes P2
+                (remove (set ((nth p-keys 2) p-map)))    ;; removes P3
+                sort))]
+     )
 ;; @@
 ;; =>
-;;; {"type":"list-like","open":"<span class='clj-lazy-seq'>(</span>","close":"<span class='clj-lazy-seq'>)</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-string'>&quot;P1&quot;</span>","value":"\"P1\""},{"type":"html","content":"<span class='clj-string'>&quot;P2&quot;</span>","value":"\"P2\""},{"type":"html","content":"<span class='clj-string'>&quot;P4&quot;</span>","value":"\"P4\""},{"type":"html","content":"<span class='clj-string'>&quot;P5&quot;</span>","value":"\"P5\""}],"value":"(\"P1\" \"P2\" \"P4\" \"P5\")"}
+;;; {"type":"list-like","open":"<span class='clj-vector'>[</span>","close":"<span class='clj-vector'>]</span>","separator":" ","items":[{"type":"list-like","open":"<span class='clj-lazy-seq'>(</span>","close":"<span class='clj-lazy-seq'>)</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-string'>&quot;P1&quot;</span>","value":"\"P1\""},{"type":"html","content":"<span class='clj-string'>&quot;P2&quot;</span>","value":"\"P2\""}],"value":"(\"P1\" \"P2\")"},{"type":"list-like","open":"<span class='clj-list'>(</span>","close":"<span class='clj-list'>)</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-string'>&quot;P2&quot;</span>","value":"\"P2\""},{"type":"html","content":"<span class='clj-string'>&quot;P3&quot;</span>","value":"\"P3\""}],"value":"(\"P2\" \"P3\")"},{"type":"list-like","open":"<span class='clj-list'>(</span>","close":"<span class='clj-list'>)</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-string'>&quot;P3&quot;</span>","value":"\"P3\""},{"type":"html","content":"<span class='clj-string'>&quot;P4&quot;</span>","value":"\"P4\""},{"type":"html","content":"<span class='clj-string'>&quot;P5&quot;</span>","value":"\"P5\""}],"value":"(\"P3\" \"P4\" \"P5\")"},{"type":"list-like","open":"<span class='clj-list'>(</span>","close":"<span class='clj-list'>)</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-string'>&quot;P1&quot;</span>","value":"\"P1\""},{"type":"html","content":"<span class='clj-string'>&quot;P4&quot;</span>","value":"\"P4\""},{"type":"html","content":"<span class='clj-string'>&quot;P5&quot;</span>","value":"\"P5\""}],"value":"(\"P1\" \"P4\" \"P5\")"}],"value":"[(\"P1\" \"P2\") (\"P2\" \"P3\") (\"P3\" \"P4\" \"P5\") (\"P1\" \"P4\" \"P5\")]"}
 ;; <=
 
 ;; @@
@@ -192,6 +231,32 @@
 ;; @@
 ;; =>
 ;;; {"type":"list-like","open":"<span class='clj-map'>{</span>","close":"<span class='clj-map'>}</span>","separator":", ","items":[{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:P1</span>","value":":P1"},{"type":"list-like","open":"<span class='clj-vector'>[</span>","close":"<span class='clj-vector'>]</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-string'>&quot;P3&quot;</span>","value":"\"P3\""}],"value":"[\"P3\"]"}],"value":"[:P1 [\"P3\"]]"},{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:P2</span>","value":":P2"},{"type":"list-like","open":"<span class='clj-vector'>[</span>","close":"<span class='clj-vector'>]</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-string'>&quot;P4&quot;</span>","value":"\"P4\""},{"type":"html","content":"<span class='clj-string'>&quot;P5&quot;</span>","value":"\"P5\""}],"value":"[\"P4\" \"P5\"]"}],"value":"[:P2 [\"P4\" \"P5\"]]"},{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:P3</span>","value":":P3"},{"type":"list-like","open":"<span class='clj-vector'>[</span>","close":"<span class='clj-vector'>]</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-string'>&quot;P1&quot;</span>","value":"\"P1\""}],"value":"[\"P1\"]"}],"value":"[:P3 [\"P1\"]]"},{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:P4</span>","value":":P4"},{"type":"list-like","open":"<span class='clj-vector'>[</span>","close":"<span class='clj-vector'>]</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-string'>&quot;P2&quot;</span>","value":"\"P2\""}],"value":"[\"P2\"]"}],"value":"[:P4 [\"P2\"]]"},{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:P5</span>","value":":P5"},{"type":"list-like","open":"<span class='clj-vector'>[</span>","close":"<span class='clj-vector'>]</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-string'>&quot;P2&quot;</span>","value":"\"P2\""}],"value":"[\"P2\"]"}],"value":"[:P5 [\"P2\"]]"}],"value":"{:P1 [\"P3\"], :P2 [\"P4\" \"P5\"], :P3 [\"P1\"], :P4 [\"P2\"], :P5 [\"P2\"]}"}
+;; <=
+
+;; @@
+(->> '(1 2 3 4 5)
+     ((juxt rest first))
+     flatten
+     ((juxt rest first))
+     flatten
+     )
+;; @@
+;; =>
+;;; {"type":"list-like","open":"<span class='clj-lazy-seq'>(</span>","close":"<span class='clj-lazy-seq'>)</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-long'>3</span>","value":"3"},{"type":"html","content":"<span class='clj-long'>4</span>","value":"4"},{"type":"html","content":"<span class='clj-long'>5</span>","value":"5"},{"type":"html","content":"<span class='clj-long'>1</span>","value":"1"},{"type":"html","content":"<span class='clj-long'>2</span>","value":"2"}],"value":"(3 4 5 1 2)"}
+;; <=
+
+;; @@
+(sort [["P1" "P2"] ["P2" "P3"] ["P3" "P4" "P5"] ["P1" "P4" "P5"]])
+;; @@
+;; =>
+;;; {"type":"list-like","open":"<span class='clj-list'>(</span>","close":"<span class='clj-list'>)</span>","separator":" ","items":[{"type":"list-like","open":"<span class='clj-vector'>[</span>","close":"<span class='clj-vector'>]</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-string'>&quot;P1&quot;</span>","value":"\"P1\""},{"type":"html","content":"<span class='clj-string'>&quot;P2&quot;</span>","value":"\"P2\""}],"value":"[\"P1\" \"P2\"]"},{"type":"list-like","open":"<span class='clj-vector'>[</span>","close":"<span class='clj-vector'>]</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-string'>&quot;P2&quot;</span>","value":"\"P2\""},{"type":"html","content":"<span class='clj-string'>&quot;P3&quot;</span>","value":"\"P3\""}],"value":"[\"P2\" \"P3\"]"},{"type":"list-like","open":"<span class='clj-vector'>[</span>","close":"<span class='clj-vector'>]</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-string'>&quot;P1&quot;</span>","value":"\"P1\""},{"type":"html","content":"<span class='clj-string'>&quot;P4&quot;</span>","value":"\"P4\""},{"type":"html","content":"<span class='clj-string'>&quot;P5&quot;</span>","value":"\"P5\""}],"value":"[\"P1\" \"P4\" \"P5\"]"},{"type":"list-like","open":"<span class='clj-vector'>[</span>","close":"<span class='clj-vector'>]</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-string'>&quot;P3&quot;</span>","value":"\"P3\""},{"type":"html","content":"<span class='clj-string'>&quot;P4&quot;</span>","value":"\"P4\""},{"type":"html","content":"<span class='clj-string'>&quot;P5&quot;</span>","value":"\"P5\""}],"value":"[\"P3\" \"P4\" \"P5\"]"}],"value":"([\"P1\" \"P2\"] [\"P2\" \"P3\"] [\"P1\" \"P4\" \"P5\"] [\"P3\" \"P4\" \"P5\"])"}
+;; <=
+
+;; @@
+(filter #(contains? (set %) "P5") [["P1" "P2"] ["P2" "P3"] ["P3" "P4" "P5"] ["P1" "P4" "P5"]])
+;; @@
+;; =>
+;;; {"type":"list-like","open":"<span class='clj-lazy-seq'>(</span>","close":"<span class='clj-lazy-seq'>)</span>","separator":" ","items":[{"type":"list-like","open":"<span class='clj-vector'>[</span>","close":"<span class='clj-vector'>]</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-string'>&quot;P3&quot;</span>","value":"\"P3\""},{"type":"html","content":"<span class='clj-string'>&quot;P4&quot;</span>","value":"\"P4\""},{"type":"html","content":"<span class='clj-string'>&quot;P5&quot;</span>","value":"\"P5\""}],"value":"[\"P3\" \"P4\" \"P5\"]"},{"type":"list-like","open":"<span class='clj-vector'>[</span>","close":"<span class='clj-vector'>]</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-string'>&quot;P1&quot;</span>","value":"\"P1\""},{"type":"html","content":"<span class='clj-string'>&quot;P4&quot;</span>","value":"\"P4\""},{"type":"html","content":"<span class='clj-string'>&quot;P5&quot;</span>","value":"\"P5\""}],"value":"[\"P1\" \"P4\" \"P5\"]"}],"value":"([\"P3\" \"P4\" \"P5\"] [\"P1\" \"P4\" \"P5\"])"}
 ;; <=
 
 ;; @@
