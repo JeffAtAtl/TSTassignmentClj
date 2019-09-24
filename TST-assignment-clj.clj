@@ -143,19 +143,6 @@
 ;; **
 
 ;; @@
-(defn all-combinable-promotions
-  [promotions]
-  )
-
-(defn combinable-promotions
-  [code promotions]
-  )
-;; @@
-;; =>
-;;; {"type":"html","content":"<span class='clj-var'>#&#x27;TST-assignment-clj/combinable-promotions</span>","value":"#'TST-assignment-clj/combinable-promotions"}
-;; <=
-
-;; @@
 (def promotions [{:code "P1" :not-combinable-with ["P3"]}
                  {:code "P2" :not-combinable-with ["P4" "P5"]}
                  {:code "P3" :not-combinable-with ["P1"]}
@@ -164,11 +151,94 @@
 
 (def expected-output-for-all-promotion-combinations [["P1" "P2"]
                                                      ["P1" "P4" "P5"]
-                                                     ["P3" "P2"]
+                                                     ["P2" "P3"]
                                                      ["P3" "P4" "P5"]])
 ;; @@
 ;; =>
 ;;; {"type":"html","content":"<span class='clj-var'>#&#x27;TST-assignment-clj/expected-output-for-all-promotion-combinations</span>","value":"#'TST-assignment-clj/expected-output-for-all-promotion-combinations"}
+;; <=
+
+;; @@
+(defn all-combinable-promotions
+  [promotions]
+  [(let [p-codes (map :code promotions)
+         p-keys (map keyword p-codes)
+         p-map (zipmap (map (comp keyword :code) promotions) (map :not-combinable-with promotions))] 
+        (->> p-codes
+             (remove (set ((first p-keys) p-map)))    ;; removes P3
+             (remove (set ((second p-keys) p-map))))) ;; removes P4 and P5
+
+   (let [p-codes (->> (map :code promotions)
+                      ((juxt rest first))
+                      flatten)
+         p-keys (map keyword p-codes)
+         p-map (zipmap (map (comp keyword :code) promotions) (map :not-combinable-with promotions))] 
+        (->> p-codes
+             (remove (set ((first p-keys) p-map)))    ;; removes P4 and P5
+             (remove (set ((second p-keys) p-map)))   ;; removes P1
+             sort)) 
+
+   (let [p-codes (->> (map :code promotions)
+                      ((juxt rest first))
+                      flatten
+                      ((juxt rest first))
+                      flatten)
+         p-keys (map keyword p-codes)
+         p-map (zipmap (map (comp keyword :code) promotions) (map :not-combinable-with promotions))] 
+        (->> p-codes
+             (remove (set ((first p-keys) p-map)))    ;; removes P1
+             (remove (set ((second p-keys) p-map)))   ;; removes P2
+             sort))
+
+   (let [p-codes (->> (map :code promotions)
+                      ((juxt rest first))
+                      flatten
+                      ((juxt rest first))
+                      flatten
+                      ((juxt rest first))
+                      flatten)
+         p-keys (map keyword p-codes)
+         p-map (zipmap (map (comp keyword :code) promotions) (map :not-combinable-with promotions))] 
+        (->> p-codes
+             (remove (set ((first p-keys) p-map)))    ;; removes P2
+             (remove (set ((second p-keys) p-map)))   ;; removes P2
+             (remove (set ((nth p-keys 2) p-map)))    ;; removes P3
+             sort))])
+
+(defn combinable-promotions
+  [code promotions]
+  (filter #(contains? (set %) code) (all-combinable-promotions promotions)) 
+  )
+;; @@
+;; =>
+;;; {"type":"html","content":"<span class='clj-var'>#&#x27;TST-assignment-clj/combinable-promotions</span>","value":"#'TST-assignment-clj/combinable-promotions"}
+;; <=
+
+;; @@
+;; tests
+(deftest test-all-combinable-promotions
+  (is (= (set expected-output-for-all-promotion-combinations) (set (all-combinable-promotions promotions)))))
+
+
+;; @@
+;; =>
+;;; {"type":"html","content":"<span class='clj-var'>#&#x27;TST-assignment-clj/test-all-combinable-promotions</span>","value":"#'TST-assignment-clj/test-all-combinable-promotions"}
+;; <=
+
+;; @@
+;; runs all tests in this worksheet both problem 1 and problem 2
+(run-tests)
+;; @@
+;; ->
+;;; 
+;;; Testing TST-assignment-clj
+;;; 
+;;; Ran 2 tests containing 2 assertions.
+;;; 0 failures, 0 errors.
+;;; 
+;; <-
+;; =>
+;;; {"type":"list-like","open":"<span class='clj-map'>{</span>","close":"<span class='clj-map'>}</span>","separator":", ","items":[{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:test</span>","value":":test"},{"type":"html","content":"<span class='clj-long'>2</span>","value":"2"}],"value":"[:test 2]"},{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:pass</span>","value":":pass"},{"type":"html","content":"<span class='clj-long'>2</span>","value":"2"}],"value":"[:pass 2]"},{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:fail</span>","value":":fail"},{"type":"html","content":"<span class='clj-long'>0</span>","value":"0"}],"value":"[:fail 0]"},{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:error</span>","value":":error"},{"type":"html","content":"<span class='clj-long'>0</span>","value":"0"}],"value":"[:error 0]"},{"type":"list-like","open":"","close":"","separator":" ","items":[{"type":"html","content":"<span class='clj-keyword'>:type</span>","value":":type"},{"type":"html","content":"<span class='clj-keyword'>:summary</span>","value":":summary"}],"value":"[:type :summary]"}],"value":"{:test 2, :pass 2, :fail 0, :error 0, :type :summary}"}
 ;; <=
 
 ;; @@
@@ -257,6 +327,48 @@
 ;; @@
 ;; =>
 ;;; {"type":"list-like","open":"<span class='clj-lazy-seq'>(</span>","close":"<span class='clj-lazy-seq'>)</span>","separator":" ","items":[{"type":"list-like","open":"<span class='clj-vector'>[</span>","close":"<span class='clj-vector'>]</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-string'>&quot;P3&quot;</span>","value":"\"P3\""},{"type":"html","content":"<span class='clj-string'>&quot;P4&quot;</span>","value":"\"P4\""},{"type":"html","content":"<span class='clj-string'>&quot;P5&quot;</span>","value":"\"P5\""}],"value":"[\"P3\" \"P4\" \"P5\"]"},{"type":"list-like","open":"<span class='clj-vector'>[</span>","close":"<span class='clj-vector'>]</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-string'>&quot;P1&quot;</span>","value":"\"P1\""},{"type":"html","content":"<span class='clj-string'>&quot;P4&quot;</span>","value":"\"P4\""},{"type":"html","content":"<span class='clj-string'>&quot;P5&quot;</span>","value":"\"P5\""}],"value":"[\"P1\" \"P4\" \"P5\"]"}],"value":"([\"P3\" \"P4\" \"P5\"] [\"P1\" \"P4\" \"P5\"])"}
+;; <=
+
+;; @@
+(all-combinable-promotions promotions)
+;; @@
+;; =>
+;;; {"type":"list-like","open":"<span class='clj-vector'>[</span>","close":"<span class='clj-vector'>]</span>","separator":" ","items":[{"type":"list-like","open":"<span class='clj-lazy-seq'>(</span>","close":"<span class='clj-lazy-seq'>)</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-string'>&quot;P1&quot;</span>","value":"\"P1\""},{"type":"html","content":"<span class='clj-string'>&quot;P2&quot;</span>","value":"\"P2\""}],"value":"(\"P1\" \"P2\")"},{"type":"list-like","open":"<span class='clj-list'>(</span>","close":"<span class='clj-list'>)</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-string'>&quot;P2&quot;</span>","value":"\"P2\""},{"type":"html","content":"<span class='clj-string'>&quot;P3&quot;</span>","value":"\"P3\""}],"value":"(\"P2\" \"P3\")"},{"type":"list-like","open":"<span class='clj-list'>(</span>","close":"<span class='clj-list'>)</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-string'>&quot;P3&quot;</span>","value":"\"P3\""},{"type":"html","content":"<span class='clj-string'>&quot;P4&quot;</span>","value":"\"P4\""},{"type":"html","content":"<span class='clj-string'>&quot;P5&quot;</span>","value":"\"P5\""}],"value":"(\"P3\" \"P4\" \"P5\")"},{"type":"list-like","open":"<span class='clj-list'>(</span>","close":"<span class='clj-list'>)</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-string'>&quot;P1&quot;</span>","value":"\"P1\""},{"type":"html","content":"<span class='clj-string'>&quot;P4&quot;</span>","value":"\"P4\""},{"type":"html","content":"<span class='clj-string'>&quot;P5&quot;</span>","value":"\"P5\""}],"value":"(\"P1\" \"P4\" \"P5\")"}],"value":"[(\"P1\" \"P2\") (\"P2\" \"P3\") (\"P3\" \"P4\" \"P5\") (\"P1\" \"P4\" \"P5\")]"}
+;; <=
+
+;; @@
+(combinable-promotions "P1" promotions)
+;; @@
+;; =>
+;;; {"type":"list-like","open":"<span class='clj-lazy-seq'>(</span>","close":"<span class='clj-lazy-seq'>)</span>","separator":" ","items":[{"type":"list-like","open":"<span class='clj-lazy-seq'>(</span>","close":"<span class='clj-lazy-seq'>)</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-string'>&quot;P1&quot;</span>","value":"\"P1\""},{"type":"html","content":"<span class='clj-string'>&quot;P2&quot;</span>","value":"\"P2\""}],"value":"(\"P1\" \"P2\")"},{"type":"list-like","open":"<span class='clj-list'>(</span>","close":"<span class='clj-list'>)</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-string'>&quot;P1&quot;</span>","value":"\"P1\""},{"type":"html","content":"<span class='clj-string'>&quot;P4&quot;</span>","value":"\"P4\""},{"type":"html","content":"<span class='clj-string'>&quot;P5&quot;</span>","value":"\"P5\""}],"value":"(\"P1\" \"P4\" \"P5\")"}],"value":"((\"P1\" \"P2\") (\"P1\" \"P4\" \"P5\"))"}
+;; <=
+
+;; @@
+(combinable-promotions "P2" promotions)
+;; @@
+;; =>
+;;; {"type":"list-like","open":"<span class='clj-lazy-seq'>(</span>","close":"<span class='clj-lazy-seq'>)</span>","separator":" ","items":[{"type":"list-like","open":"<span class='clj-lazy-seq'>(</span>","close":"<span class='clj-lazy-seq'>)</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-string'>&quot;P1&quot;</span>","value":"\"P1\""},{"type":"html","content":"<span class='clj-string'>&quot;P2&quot;</span>","value":"\"P2\""}],"value":"(\"P1\" \"P2\")"},{"type":"list-like","open":"<span class='clj-list'>(</span>","close":"<span class='clj-list'>)</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-string'>&quot;P2&quot;</span>","value":"\"P2\""},{"type":"html","content":"<span class='clj-string'>&quot;P3&quot;</span>","value":"\"P3\""}],"value":"(\"P2\" \"P3\")"}],"value":"((\"P1\" \"P2\") (\"P2\" \"P3\"))"}
+;; <=
+
+;; @@
+(combinable-promotions "P3" promotions)
+;; @@
+;; =>
+;;; {"type":"list-like","open":"<span class='clj-lazy-seq'>(</span>","close":"<span class='clj-lazy-seq'>)</span>","separator":" ","items":[{"type":"list-like","open":"<span class='clj-list'>(</span>","close":"<span class='clj-list'>)</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-string'>&quot;P2&quot;</span>","value":"\"P2\""},{"type":"html","content":"<span class='clj-string'>&quot;P3&quot;</span>","value":"\"P3\""}],"value":"(\"P2\" \"P3\")"},{"type":"list-like","open":"<span class='clj-list'>(</span>","close":"<span class='clj-list'>)</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-string'>&quot;P3&quot;</span>","value":"\"P3\""},{"type":"html","content":"<span class='clj-string'>&quot;P4&quot;</span>","value":"\"P4\""},{"type":"html","content":"<span class='clj-string'>&quot;P5&quot;</span>","value":"\"P5\""}],"value":"(\"P3\" \"P4\" \"P5\")"}],"value":"((\"P2\" \"P3\") (\"P3\" \"P4\" \"P5\"))"}
+;; <=
+
+;; @@
+(combinable-promotions "P4" promotions)
+;; @@
+;; =>
+;;; {"type":"list-like","open":"<span class='clj-lazy-seq'>(</span>","close":"<span class='clj-lazy-seq'>)</span>","separator":" ","items":[{"type":"list-like","open":"<span class='clj-list'>(</span>","close":"<span class='clj-list'>)</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-string'>&quot;P3&quot;</span>","value":"\"P3\""},{"type":"html","content":"<span class='clj-string'>&quot;P4&quot;</span>","value":"\"P4\""},{"type":"html","content":"<span class='clj-string'>&quot;P5&quot;</span>","value":"\"P5\""}],"value":"(\"P3\" \"P4\" \"P5\")"},{"type":"list-like","open":"<span class='clj-list'>(</span>","close":"<span class='clj-list'>)</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-string'>&quot;P1&quot;</span>","value":"\"P1\""},{"type":"html","content":"<span class='clj-string'>&quot;P4&quot;</span>","value":"\"P4\""},{"type":"html","content":"<span class='clj-string'>&quot;P5&quot;</span>","value":"\"P5\""}],"value":"(\"P1\" \"P4\" \"P5\")"}],"value":"((\"P3\" \"P4\" \"P5\") (\"P1\" \"P4\" \"P5\"))"}
+;; <=
+
+;; @@
+(combinable-promotions "P5" promotions)
+;; @@
+;; =>
+;;; {"type":"list-like","open":"<span class='clj-lazy-seq'>(</span>","close":"<span class='clj-lazy-seq'>)</span>","separator":" ","items":[{"type":"list-like","open":"<span class='clj-list'>(</span>","close":"<span class='clj-list'>)</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-string'>&quot;P3&quot;</span>","value":"\"P3\""},{"type":"html","content":"<span class='clj-string'>&quot;P4&quot;</span>","value":"\"P4\""},{"type":"html","content":"<span class='clj-string'>&quot;P5&quot;</span>","value":"\"P5\""}],"value":"(\"P3\" \"P4\" \"P5\")"},{"type":"list-like","open":"<span class='clj-list'>(</span>","close":"<span class='clj-list'>)</span>","separator":" ","items":[{"type":"html","content":"<span class='clj-string'>&quot;P1&quot;</span>","value":"\"P1\""},{"type":"html","content":"<span class='clj-string'>&quot;P4&quot;</span>","value":"\"P4\""},{"type":"html","content":"<span class='clj-string'>&quot;P5&quot;</span>","value":"\"P5\""}],"value":"(\"P1\" \"P4\" \"P5\")"}],"value":"((\"P3\" \"P4\" \"P5\") (\"P1\" \"P4\" \"P5\"))"}
 ;; <=
 
 ;; @@
